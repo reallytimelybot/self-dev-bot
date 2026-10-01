@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Путь к себе</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<!-- ХЕДЕР -->
+<header class="header">
+  <div class="logo">
+    <span class="logo-mark">◈</span>
+    <span class="logo-text">Путь к себе</span>
+  </div>
+  <div class="user-badge" id="userBadge">Гость</div>
+</header>
+
+<!-- ГЛАВНЫЙ ЭКРАН -->
+<main id="app">
+
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <h1>Развивайся<br><span class="accent">каждый день</span></h1>
+    <p class="hero-sub">Психология, практики и инсайты — в одном приложении</p>
+  </section>
+
+  <!-- СТАТИСТИКА -->
+  <section class="stats">
+    <div class="stat-card">
+      <div class="stat-value" id="streakVal">0</div>
+      <div class="stat-label">дней подряд</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="doneVal">0</div>
+      <div class="stat-label">практик</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="notesVal">0</div>
+      <div class="stat-label">записей</div>
+    </div>
+  </section>
+
+  <!-- НАВИГАЦИЯ -->
+  <nav class="tabs">
+    <button class="tab active" data-tab="knowledge">📚 Знания</button>
+    <button class="tab" data-tab="practice">🎯 Практики</button>
+    <button class="tab" data-tab="diary">💭 Дневник</button>
+  </nav>
+
+  <!-- ЗНАНИЯ -->
+  <section class="tab-content active" id="knowledge">
+    <div class="cards" id="knowledgeList"></div>
+  </section>
+
+  <!-- ПРАКТИКИ -->
+  <section class="tab-content" id="practice">
+    <div class="cards" id="practiceList"></div>
+  </section>
+
+  <!-- ДНЕВНИК -->
+  <section class="tab-content" id="diary">
+    <div class="diary-box">
+      <label class="diary-label">Как ты себя чувствуешь?</label>
+      <div class="mood-row" id="moodRow">
+        <button class="mood" data-mood="😊">😊</button>
+        <button class="mood" data-mood="😐">😐</button>
+        <button class="mood" data-mood="😔">😔</button>
+        <button class="mood" data-mood="😡">😡</button>
+        <button class="mood" data-mood="😴">😴</button>
+      </div>
+      <textarea id="diaryText" placeholder="Что происходит внутри?.."></textarea>
+      <button class="btn-primary" id="saveNote">Сохранить запись</button>
+      <div class="notes-list" id="notesList"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- МОДАЛЬНОЕ ОКНО КАРТОЧКИ -->
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-tag" id="modalTag"></div>
+    <h2 id="modalTitle"></h2>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
