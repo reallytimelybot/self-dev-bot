@@ -1,259 +1,252 @@
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+const tg = window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
+tg?.setHeaderColor?.('#0A0A0A');
+tg?.setBackgroundColor?.('#0A0A0A');
 
-:root {
-  --red: #E63946;
-  --red-dark: #A4161A;
-  --red-glow: rgba(230, 57, 70, 0.35);
-  --bg: #0A0A0A;
-  --bg-card: #141414;
-  --bg-card-2: #1C1C1C;
-  --border: #262626;
-  --text: #F5F5F5;
-  --text-dim: #8A8A8A;
+// Приветствие пользователя
+if (tg?.initDataUnsafe?.user) {
+  const u = tg.initDataUnsafe.user;
+  document.getElementById('userBadge').textContent = u.first_name || 'Гость';
 }
 
-html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
+/* ============ ДАННЫЕ ============ */
+
+const knowledge = [
+  {
+    tag: "К. Юнг",
+    title: "Тень и целостность",
+    desc: "Почему важно принять свои тёмные стороны",
+    body: `
+      <p><strong>Карл Густав Юнг</strong> утверждал: всё, что мы отвергаем в себе, не исчезает — оно становится нашей «Тенью» и управляет нами из бессознательного.</p>
+      <p>Мы злимся на других за то, что не позволяем себе. Мы критикуем в людях то, что подавили внутри.</p>
+      <p><em>Практика:</em> вспомни человека, который тебя раздражает. Спроси себя: «Какое качество во мне он отражает?» Это первый шаг к интеграции Тени.</p>
+      <p>Целостность — не в том, чтобы быть идеальным. А в том, чтобы вместить всего себя.</p>
+    `
+  },
+  {
+    tag: "В. Франкл",
+    title: "Смысл важнее счастья",
+    desc: "Логотерапия и сила выбора",
+    body: `
+      <p><strong>Виктор Франкл</strong>, переживший концлагерь, писал: «У человека можно отнять всё, кроме одного — возможности выбирать своё отношение к обстоятельствам».</p>
+      <p>Счастье нельзя поймать напрямую — оно приходит как побочный эффект жизни со смыслом.</p>
+      <p><em>Вопрос себе:</em> «Зачем я встаю утром? Кому и чему я служу?»</p>
+      <p>Если есть «зачем» — выдержишь любое «как».</p>
+    `
+  },
+  {
+    tag: "М. Селигман",
+    title: "Выученный оптимизм",
+    desc: "Как перестать объяснять плохое через себя",
+    body: `
+      <p><strong>Мартин Селигман</strong> доказал: пессимизм — это привычка объяснять неудачи как постоянные, всеобъемлющие и личные.</p>
+      <p>«Я всегда всё порчу» → это и есть выученная беспомощность.</p>
+      <p><em>Техника:</em> когда что-то идёт не так, спроси — это <strong>временно</strong>? это <strong>касается только этой сферы</strong>? это <strong>не только моя вина</strong>?</p>
+      <p>Оптимизм — не розовые очки. Это более точная картина реальности.</p>
+    `
+  },
+  {
+    tag: "А. Лоуэн",
+    title: "Тело помнит всё",
+    desc: "Как эмоции живут в мышцах",
+    body: `
+      <p><strong>Александр Лоуэн</strong> показал: подавленные эмоции не исчезают — они «застревают» в теле как хроническое напряжение.</p>
+      <p>Сжатые плечи — тревога. Зажатая челюсть — гнев. Слабый вдох — страх проявиться.</p>
+      <p><em>Практика:</em> 3 минуты глубокого дыхания животом. Заметь, где тело держит напряжение. Не убирай — просто наблюдай.</p>
+      <p>Осознание — уже начало расслабления.</p>
+    `
+  },
+  {
+    tag: "Э. Фромм",
+    title: "Иметь или быть",
+    desc: "Два способа жить",
+    body: `
+      <p><strong>Эрих Фромм</strong> разделял два модуса существования: «иметь» и «быть».</p>
+      <p>В режиме «иметь» — я ценен тем, что у меня есть. В режиме «быть» — тем, что я есть и как я живу.</p>
+      <p><em>Вопрос:</em> если убрать всё, что ты имеешь — что останется? Это и есть ты настоящий.</p>
+    `
+  }
+];
+
+const practice = [
+  {
+    tag: "Утро",
+    title: "Практика 5-4-3-2-1",
+    desc: "Вернуть себя в настоящий момент",
+    body: `
+      <p>Тревога живёт в будущем. Тело — всегда здесь.</p>
+      <p><strong>Назови:</strong></p>
+      <p>— 5 вещей, которые видишь<br>— 4 — которые слышишь<br>— 3 — которых касаешься<br>— 2 — запаха<br>— 1 — вкус</p>
+      <p><em>Зачем:</em> техника заземления из терапии ПТСР. Работает за 60 секунд.</p>
+    `
+  },
+  {
+    tag: "Днём",
+    title: "Вопрос к себе",
+    desc: "Три вопроса в середине дня",
+    body: `
+      <p>Остановись на 2 минуты и ответь честно:</p>
+      <p>1. Что я сейчас чувствую <strong>на самом деле</strong>?<br>2. Чего мне сейчас не хватает?<br>3. Что я могу себе дать прямо сейчас?</p>
+      <p><em>Зачем:</em> возвращает контакт с потребностями — без него мы живём в автопилоте.</p>
+    `
+  },
+  {
+    tag: "Вечер",
+    title: "Дневник благодарности",
+    desc: "Перепрограммирование внимания",
+    body: `
+      <p>Мозг эволюционно настроен искать угрозы. Благодарность — способ его переобучить.</p>
+      <p>Каждый вечер записывай <strong>3 вещи</strong>, за которые ты благодарен сегодня. Даже мелочи: чашка кофе, тёплый свитер, разговор с другом.</p>
+      <p><em>Через 21 день</em> мозг начнёт сканировать мир по-другому.</p>
+    `
+  },
+  {
+    tag: "Перед сном",
+    title: "Тело-сканирование",
+    desc: "Медитация на расслабление",
+    body: `
+      <p>Ляг. Закрой глаза. Дыши ровно.</p>
+      <p>Перенеси внимание в стопы. Почувствуй их. Затем — голени, колени, бёдра. Медленно поднимайся к тазу, животу, груди, плечам, шее, лицу.</p>
+      <p>Где замечаешь напряжение — просто дыши туда. Не убирай. Осознавай.</p>
+      <p><em>10 минут перед сном</em> — и сон глубже.</p>
+    `
+  },
+  {
+    tag: "Кризис",
+    title: "Стоп-техника",
+    desc: "Когда накрывает эмоция",
+    body: `
+      <p><strong>S.T.O.P.</strong></p>
+      <p><strong>S</strong> — Stop. Замри.<br>
+      <strong>T</strong> — Take a breath. Вдох.<br>
+      <strong>O</strong> — Observe. Что я чувствую? Где в теле?<br>
+      <strong>P</strong> — Proceed. Действуй осознанно.</p>
+      <p><em>Это разрыв</em> между стимулом и реакцией. Там живёт свобода.</p>
+    `
+  }
+];
+
+/* ============ РЕНДЕР ============ */
+
+function renderCards(data, containerId, type) {
+  const box = document.getElementById(containerId);
+  box.innerHTML = data.map((item, i) => `
+    <div class="card" data-type="${type}" data-index="${i}">
+      <div class="card-tag">${item.tag}</div>
+      <div class="card-title">${item.title}</div>
+      <div class="card-desc">${item.desc}</div>
+    </div>
+  `).join('');
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  top: -200px; right: -200px;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, var(--red-glow), transparent 70%);
-  filter: blur(60px);
-  z-index: 0;
-  pointer-events: none;
+renderCards(knowledge, 'knowledgeList', 'k');
+renderCards(practice, 'practiceList', 'p');
+
+/* ============ TABS ============ */
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+    tg?.HapticFeedback?.impactOccurred('light');
+  });
+});
+
+/* ============ MODAL ============ */
+
+const modal = document.getElementById('modal');
+const modalTag = document.getElementById('modalTag');
+const modalTitle = document.getElementById('modalTitle');
+const modalBody = document.getElementById('modalBody');
+
+document.addEventListener('click', (e) => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+
+  const type = card.dataset.type;
+  const idx = +card.dataset.index;
+  const item = type === 'k' ? knowledge[idx] : practice[idx];
+
+  modalTag.textContent = item.tag;
+  modalTitle.textContent = item.title;
+  modalBody.innerHTML = item.body;
+  modal.classList.add('open');
+  tg?.HapticFeedback?.impactOccurred('medium');
+});
+
+document.getElementById('modalClose').addEventListener('click', () => modal.classList.remove('open'));
+modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+
+/* ============ ДНЕВНИК ============ */
+
+let selectedMood = null;
+let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+
+document.querySelectorAll('.mood').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mood').forEach(m => m.classList.remove('active'));
+    btn.classList.add('active');
+    selectedMood = btn.dataset.mood;
+    tg?.HapticFeedback?.selectionChanged();
+  });
+});
+
+document.getElementById('saveNote').addEventListener('click', () => {
+  const text = document.getElementById('diaryText').value.trim();
+  if (!text) return;
+  if (!selectedMood) { tg?.HapticFeedback?.notificationOccurred('warning'); return; }
+
+  notes.unshift({
+    mood: selectedMood,
+    text,
+    date: new Date().toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+  });
+  localStorage.setItem('notes', JSON.stringify(notes));
+  document.getElementById('diaryText').value = '';
+  document.querySelectorAll('.mood').forEach(m => m.classList.remove('active'));
+  selectedMood = null;
+  renderNotes();
+  updateStats();
+  tg?.HapticFeedback?.notificationOccurred('success');
+});
+
+function renderNotes() {
+  const list = document.getElementById('notesList');
+  if (!notes.length) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:12px;text-align:center;padding:16px;">Пока нет записей</div>';
+    return;
+  }
+  list.innerHTML = notes.slice(0, 20).map(n => `
+    <div class="note">
+      <div class="note-head">
+        <span class="note-mood">${n.mood}</span>
+        <span>${n.date}</span>
+      </div>
+      <div>${escapeHtml(n.text)}</div>
+    </div>
+  `).join('');
 }
 
-/* HEADER */
-.header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 16px 20px;
-  position: sticky; top: 0;
-  background: rgba(10,10,10,0.85);
-  backdrop-filter: blur(20px);
-  z-index: 10;
-  border-bottom: 1px solid var(--border);
-}
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-mark {
-  color: var(--red); font-size: 22px;
-  text-shadow: 0 0 15px var(--red-glow);
-}
-.logo-text { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; }
-.user-badge {
-  font-size: 12px; padding: 6px 12px;
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 20px; color: var(--text-dim);
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-/* HERO */
-.hero { padding: 32px 20px 20px; position: relative; z-index: 1; }
-.hero h1 {
-  font-size: 34px; line-height: 1.1; font-weight: 800;
-  letter-spacing: -0.5px; margin-bottom: 12px;
-}
-.accent {
-  background: linear-gradient(135deg, var(--red), #FF6B7A);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.hero-sub { color: var(--text-dim); font-size: 14px; line-height: 1.5; }
+/* ============ СТАТИСТИКА ============ */
 
-/* STATS */
-.stats {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 10px; padding: 20px;
-}
-.stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 10px;
-  text-align: center;
-  transition: 0.3s;
-}
-.stat-card:active { transform: scale(0.96); border-color: var(--red); }
-.stat-value {
-  font-size: 24px; font-weight: 800; color: var(--red);
-  text-shadow: 0 0 20px var(--red-glow);
-}
-.stat-label { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+function updateStats() {
+  document.getElementById('notesVal').textContent = notes.length;
+  document.getElementById('doneVal').textContent = Math.min(notes.length * 2 + 3, 99);
 
-/* TABS */
-.tabs {
-  display: flex; gap: 8px;
-  padding: 0 20px 20px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.tabs::-webkit-scrollbar { display: none; }
-.tab {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  padding: 10px 16px;
-  border-radius: 12px;
-  font-size: 13px; font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: 0.25s;
-  font-family: inherit;
-}
-.tab.active {
-  background: var(--red);
-  color: white;
-  border-color: var(--red);
-  box-shadow: 0 0 20px var(--red-glow);
+  // Стрик (дни подряд)
+  const days = new Set(notes.map(n => new Date(n.date.split(',')[0]).toDateString()));
+  let streak = 0;
+  let d = new Date();
+  while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); }
+  document.getElementById('streakVal').textContent = streak || 1;
 }
 
-/* CONTENT */
-.tab-content { display: none; padding: 0 20px 40px; }
-.tab-content.active { display: block; animation: fadeIn 0.35s ease; }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.cards { display: flex; flex-direction: column; gap: 12px; }
-
-.card {
-  background: linear-gradient(145deg, var(--bg-card), var(--bg-card-2));
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 18px;
-  cursor: pointer;
-  transition: 0.3s;
-  position: relative;
-  overflow: hidden;
-}
-.card::before {
-  content: ""; position: absolute;
-  top: 0; left: 0; width: 3px; height: 100%;
-  background: var(--red);
-  transform: scaleY(0); transform-origin: top;
-  transition: 0.3s;
-}
-.card:active { transform: scale(0.98); border-color: var(--red); }
-.card:active::before { transform: scaleY(1); }
-.card-tag {
-  display: inline-block;
-  font-size: 10px; text-transform: uppercase;
-  letter-spacing: 1px; font-weight: 700;
-  color: var(--red); margin-bottom: 8px;
-}
-.card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-.card-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
-
-/* DIARY */
-.diary-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 20px;
-}
-.diary-label { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: block; }
-.mood-row { display: flex; gap: 8px; margin-bottom: 16px; }
-.mood {
-  flex: 1;
-  background: var(--bg-card-2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  font-size: 22px; padding: 10px 0;
-  cursor: pointer; transition: 0.25s;
-}
-.mood.active {
-  background: var(--red);
-  border-color: var(--red);
-  box-shadow: 0 0 15px var(--red-glow);
-  transform: scale(1.08);
-}
-#diaryText {
-  width: 100%; min-height: 100px;
-  background: var(--bg-card-2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--text);
-  padding: 14px;
-  font-family: inherit; font-size: 14px;
-  resize: vertical;
-  margin-bottom: 12px;
-}
-#diaryText:focus { outline: none; border-color: var(--red); }
-
-.btn-primary {
-  width: 100%;
-  background: var(--red);
-  color: white; border: none;
-  padding: 14px;
-  border-radius: 12px;
-  font-size: 14px; font-weight: 700;
-  cursor: pointer;
-  transition: 0.25s;
-  font-family: inherit;
-  box-shadow: 0 0 25px var(--red-glow);
-}
-.btn-primary:active { transform: scale(0.97); background: var(--red-dark); }
-
-.notes-list { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-.note {
-  background: var(--bg-card-2);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--red);
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 13px;
-}
-.note-head {
-  display: flex; justify-content: space-between;
-  margin-bottom: 6px; font-size: 11px; color: var(--text-dim);
-}
-.note-mood { font-size: 16px; }
-
-/* MODAL */
-.modal {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(10px);
-  display: none;
-  align-items: flex-end;
-  z-index: 100;
-}
-.modal.open { display: flex; animation: fadeIn 0.3s ease; }
-.modal-card {
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
-  border-radius: 24px 24px 0 0;
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 28px 24px 40px;
-  position: relative;
-  animation: slideUp 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
-}
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.modal-close {
-  position: absolute; top: 16px; right: 16px;
-  background: var(--bg-card-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 14px;
-}
-.modal-tag {
-  font-size: 11px; text-transform: uppercase;
-  letter-spacing: 1.5px; font-weight: 700;
-  color: var(--red); margin-bottom: 10px;
-}
-.modal-card h2 { font-size: 22px; margin-bottom: 16px; line-height: 1.2; }
-.modal-body { font-size: 14px; line-height: 1.7; color: #D0D0D0; }
-.modal-body p { margin-bottom: 12px; }
-.modal-body strong { color: var(--text); }
-.modal-body em { color: var(--red); font-style: normal; font-weight: 600; }
+renderNotes();
+updateStats();
