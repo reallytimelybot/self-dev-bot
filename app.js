@@ -389,7 +389,7 @@ async function openBook(slug) {
   currentBook = book;
 
   readerTitle.textContent = book.title + ' — ' + book.author;
-  readerContent.textContent = 'Загрузка...';
+  readerContent.innerHTML = '<p style="color:var(--text-dim);">Загрузка...</p>';
   reader.classList.add('open');
   applyFontSize();
 
@@ -403,8 +403,8 @@ async function openBook(slug) {
     const res = await fetch('books/' + slug + '.txt');
     if (!res.ok) throw new Error('Не найдено');
     const text = await res.text();
-    const paragraphs = text.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0).map(p => `<p>${escapeHtml(p)}</p>`).join('');
-    readerContent.innerHTML = paragraphs;
+    readerContent.innerHTML = formatBookText(text);
+
     const savedPos = localStorage.getItem('readPos_' + slug);
     if (savedPos) readerScroll.scrollTop = parseInt(savedPos);
     else readerScroll.scrollTop = 0;
@@ -412,10 +412,85 @@ async function openBook(slug) {
     readerContent.innerHTML = `
       <p style="color:var(--red);">📭 Файл книги пока не загружен.</p>
       <p style="color:var(--text-dim);font-size:14px;">
-        Скачай текст с <strong>Project Gutenberg</strong> и загрузи в папку <code>books/</code> на GitHub.<br><br>
+        Скачай текст с <strong>Project Gutenberg</strong> или <strong>Викитеки</strong> и загрузи в папку <code>books/</code> на GitHub.<br><br>
         Имя файла: <code>${slug}.txt</code>
       </p>`;
   }
+}
+
+/* ============ ФОРМАТИРОВАНИЕ ТЕКСТА КНИГИ ============ */
+
+function formatBookText(rawText) {
+  let text = rawText
+    .replace(/\r\n/g, '\n')
+    .replace(/\[\d+\]/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  const lines = text.split('\n').map(l => l.trim());
+  const out = [];
+  let paragraphBuffer = [];
+
+  function flushParagraph() {
+    if (!paragraphBuffer.length) return;
+    const joined = paragraphBuffer.join(' ').trim();
+    if (joined.length > 0) {
+      const chunks = splitLongParagraph(joined, 500);
+      chunks.forEach(chunk => out.push(`<p>${escapeHtml(chunk)}</p>`));
+    }
+    paragraphBuffer = [];
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line) { flushParagraph(); continue; }
+    if (isHeader(line)) {
+      flushParagraph();
+      out.push(`<h3 class="book-header">${escapeHtml(line)}</h3>`);
+      continue;
+    }
+    if (isSubHeader(line)) {
+      flushParagraph();
+      out.push(`<h4 class="book-subheader">${escapeHtml(line)}</h4>`);
+      continue;
+    }
+    paragraphBuffer.push(line);
+  }
+  flushParagraph();
+  return out.join('');
+}
+
+function isHeader(line) {
+  if (line.length > 60) return false;
+  const letters = line.replace(/[^A-ZА-ЯЁ]/g, '');
+  if (letters.length < 3) return false;
+  const upper = line.toUpperCase();
+  const ratio = letters.length / line.length;
+  if (line === upper && ratio > 0.5) return true;
+  if (/^(КНИГА|ГЛАВА|ЧАСТЬ|РАЗДЕЛ|BOOK|CHAPTER|PART)\b/i.test(line)) return true;
+  return false;
+}
+
+function isSubHeader(line) {
+  if (/^[IVXLCDM]+\.?$/.test(line) && line.length <= 6) return true;
+  if (/^(Глава|ГЛАВА|Chapter|CHAPTER)\s+\d+/i.test(line)) return true;
+  if (/^§?\s*\d+\.?\s*$/.test(line) && line.length < 8) return true;
+  return false;
+}
+
+function splitLongParagraph(text, maxLen) {
+  if (text.length <= maxLen) return [text];
+  const chunks = [];
+  let remaining = text;
+  while (remaining.length > maxLen) {
+    let cut = remaining.lastIndexOf('.', maxLen);
+    if (cut < maxLen * 0.4) cut = remaining.lastIndexOf(' ', maxLen);
+    if (cut <= 0) cut = maxLen;
+    chunks.push(remaining.slice(0, cut + 1).trim());
+    remaining = remaining.slice(cut + 1).trim();
+  }
+  if (remaining.length) chunks.push(remaining);
+  return chunks;
 }
 
 readerScroll.addEventListener('scroll', () => {
