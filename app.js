@@ -127,6 +127,14 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function plural(n, one, few, many) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+  return many;
+}
+
 /* ============ РЕНДЕР ЗНАНИЙ И ПРАКТИК ============ */
 
 function renderCards(data, containerId, type) {
@@ -602,13 +610,155 @@ document.getElementById('saveNoteBtn').addEventListener('click', () => {
   tg?.HapticFeedback?.notificationOccurred('success');
 });
 
+/* ============ ТРЕКЕР ПРИВЫЧЕК ============ */
+
+let habits = JSON.parse(localStorage.getItem('habits') || '[]');
+
+const DAY_NAMES = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
+function todayKey(date = new Date()) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function calcStreak(checks) {
+  let streak = 0;
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  while (checks[todayKey(d)]) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+}
+
+function renderHabits() {
+  const list = document.getElementById('habitsList');
+
+  if (!habits.length) {
+    list.innerHTML = `
+      <div class="habits-empty">
+        ✅ Пока нет привычек<br>
+        Добавь первую выше —<br>
+        и начни отмечать каждый день
+      </div>`;
+    return;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  list.innerHTML = habits.map((h, i) => {
+    const days = [];
+    for (let d = 6; d >= 0; d--) {
+      const day = new Date(today);
+      day.setDate(day.getDate() - d);
+      const key = todayKey(day);
+      days.push({
+        key,
+        label: DAY_NAMES[day.getDay()],
+        num: day.getDate(),
+        done: !!(h.checks && h.checks[key]),
+        isToday: d === 0
+      });
+    }
+
+    const todayDone = !!(h.checks && h.checks[todayKey()]);
+    const streak = calcStreak(h.checks || {});
+
+    return `
+      <div class="habit-card">
+        <button class="habit-remove" data-idx="${i}">✕</button>
+        <div class="habit-head">
+          <div class="habit-icon">${h.emoji}</div>
+          <div class="habit-info">
+            <div class="habit-name">${escapeHtml(h.name)}</div>
+            <div class="habit-streak">🔥 <strong>${streak}</strong> ${plural(streak, 'день', 'дня', 'дней')} подряд</div>
+          </div>
+        </div>
+        <div class="habit-days">
+          ${days.map(d => `
+            <div class="habit-day ${d.done ? 'done' : ''} ${d.isToday ? 'today' : ''}">
+              <span class="habit-day-label">${d.label}</span>
+              <span class="habit-day-num">${d.num}</span>
+            </div>
+          `).join('')}
+        </div>
+        <button class="habit-mark-btn ${todayDone ? 'done' : ''}" data-idx="${i}">
+          ${todayDone ? '✓ Сегодня сделано' : 'Отметить сегодня'}
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.habit-mark-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.idx;
+      const key = todayKey();
+      if (!habits[i].checks) habits[i].checks = {};
+      if (habits[i].checks[key]) delete habits[i].checks[key];
+      else habits[i].checks[key] = true;
+      localStorage.setItem('habits', JSON.stringify(habits));
+      renderHabits();
+      updateStats();
+      tg?.HapticFeedback?.notificationOccurred('success');
+    });
+  });
+
+  list.querySelectorAll('.habit-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.idx;
+      if (!confirm('Удалить привычку «' + habits[i].name + '»?')) return;
+      habits.splice(i, 1);
+      localStorage.setItem('habits', JSON.stringify(habits));
+      renderHabits();
+      updateStats();
+      tg?.HapticFeedback?.impactOccurred('medium');
+    });
+  });
+}
+
+document.getElementById('addHabitBtn').addEventListener('click', () => {
+  const name = document.getElementById('habitName').value.trim();
+  const emoji = document.getElementById('habitEmoji').value.trim() || '⭐';
+
+  if (!name) {
+    tg?.HapticFeedback?.notificationOccurred('warning');
+    return;
+  }
+
+  habits.push({
+    emoji,
+    name,
+    checks: {},
+    createdAt: Date.now()
+  });
+  localStorage.setItem('habits', JSON.stringify(habits));
+
+  document.getElementById('habitName').value = '';
+  document.getElementById('habitEmoji').value = '⭐';
+
+  renderHabits();
+  updateStats();
+  tg?.HapticFeedback?.notificationOccurred('success');
+});
+
 /* ============ СТАТИСТИКА ============ */
 
 function updateStats() {
   document.getElementById('notesVal').textContent = notes.length;
   document.getElementById('doneVal').textContent = Math.min(notes.length * 2 + 3, 99);
+
   const booksVal = document.getElementById('booksVal');
   if (booksVal) booksVal.textContent = readBooks.length;
+
+  const todayK = todayKey();
+  const habitsToday = habits.filter(h => h.checks && h.checks[todayK]).length;
+  const habitsStat = document.getElementById('habitsVal');
+  if (habitsStat) habitsStat.textContent = habitsToday + '/' + habits.length;
 
   const days = new Set(notes.map(n => new Date(n.date.split(',')[0]).toDateString()));
   let streak = 0;
@@ -623,4 +773,5 @@ renderNotes();
 renderFavorites();
 renderQuote(pickRandomQuote());
 renderLibrary();
+renderHabits();
 updateStats();
