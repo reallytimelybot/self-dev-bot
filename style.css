@@ -528,7 +528,55 @@ body::before {
   font-family: Georgia, "Times New Roman", serif;
   word-wrap: break-word;
 }
-.reader-content p { margin-bottom: 16px; }
+.reader-content p {
+  margin-bottom: 14px;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* ЗАГОЛОВКИ В КНИГАХ */
+.book-header {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--red);
+  text-transform: uppercase;
+  margin: 32px 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--red);
+  position: relative;
+}
+.book-header::after {
+  content: "";
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 40px; height: 2px;
+  background: #FF6B7A;
+  box-shadow: 0 0 10px var(--red-glow);
+}
+
+.book-subheader {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #DDD;
+  margin: 24px 0 12px;
+  padding-left: 12px;
+  border-left: 3px solid var(--red);
+}
+
+/* Буквица первого абзаца после заголовка */
+.book-header + p::first-letter,
+.book-subheader + p::first-letter {
+  font-family: Georgia, serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--red);
+  float: left;
+  line-height: 1;
+  margin: 4px 8px 0 0;
+}
 
 .reader-bottom {
   display: flex; gap: 10px;
