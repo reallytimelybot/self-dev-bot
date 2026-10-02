@@ -22,7 +22,6 @@
 <main id="app">
 
   <section class="hero">
-    <div class="hero-glow"></div>
     <h1>Развивайся<br><span class="accent">каждый день</span></h1>
     <p class="hero-sub">Психология, практики и инсайты — в одном приложении</p>
   </section>
@@ -31,7 +30,7 @@
   <section class="stats">
     <div class="stat-card">
       <div class="stat-value" id="streakVal">0</div>
-      <div class="stat-label">дней подряд</div>
+      <div class="stat-label">дней</div>
     </div>
     <div class="stat-card">
       <div class="stat-value" id="doneVal">0</div>
@@ -41,11 +40,18 @@
       <div class="stat-value" id="notesVal">0</div>
       <div class="stat-label">записей</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-value" id="booksVal">0</div>
+      <div class="stat-label">книг</div>
+    </div>
   </section>
 
   <!-- НАВИГАЦИЯ -->
   <nav class="tabs">
     <button class="tab active" data-tab="knowledge">📚 Знания</button>
+    <button class="tab" data-tab="library">📖 Библиотека</button>
+    <button class="tab" data-tab="quotes">💬 Цитаты</button>
+    <button class="tab" data-tab="favorites">❤️ Избранное</button>
     <button class="tab" data-tab="practice">🎯 Практики</button>
     <button class="tab" data-tab="diary">💭 Дневник</button>
   </nav>
@@ -53,6 +59,51 @@
   <!-- ЗНАНИЯ -->
   <section class="tab-content active" id="knowledge">
     <div class="cards" id="knowledgeList"></div>
+  </section>
+
+  <!-- БИБЛИОТЕКА -->
+  <section class="tab-content" id="library">
+    <div class="lib-filters">
+      <button class="filter-chip active" data-cat="all">Все</button>
+      <button class="filter-chip" data-cat="psychology">🧠 Психология</button>
+      <button class="filter-chip" data-cat="money">💰 Деньги</button>
+      <button class="filter-chip" data-cat="discipline">⚡️ Дисциплина</button>
+      <button class="filter-chip" data-cat="meaning">🌌 Смысл</button>
+      <button class="filter-chip" data-cat="body">💪 Тело</button>
+    </div>
+    <div class="cards" id="libraryList"></div>
+  </section>
+
+  <!-- ЦИТАТЫ -->
+  <section class="tab-content" id="quotes">
+    <div class="quote-filters">
+      <button class="filter-chip active" data-cat="all">Все</button>
+      <button class="filter-chip" data-cat="psychology">🧠 Психология</button>
+      <button class="filter-chip" data-cat="money">💰 Деньги</button>
+      <button class="filter-chip" data-cat="love">❤️ Отношения</button>
+      <button class="filter-chip" data-cat="discipline">⚡️ Дисциплина</button>
+      <button class="filter-chip" data-cat="meaning">🌌 Смысл</button>
+      <button class="filter-chip" data-cat="body">💪 Тело</button>
+      <button class="filter-chip" data-cat="creative">🎨 Творчество</button>
+    </div>
+
+    <div class="quote-card" id="quoteCard">
+      <div class="quote-mark">❝</div>
+      <div class="quote-text" id="quoteText">Нажми «Новая цитата», чтобы начать</div>
+      <div class="quote-author" id="quoteAuthor"></div>
+      <div class="quote-actions">
+        <button class="btn-ghost" id="btnSaveQuote">❤️ Сохранить</button>
+        <button class="btn-primary" id="btnNextQuote">🎲 Новая цитата</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ИЗБРАННОЕ -->
+  <section class="tab-content" id="favorites">
+    <div class="fav-header">
+      <div class="fav-count" id="favCount">Сохранено: 0</div>
+    </div>
+    <div class="cards" id="favoritesList"></div>
   </section>
 
   <!-- ПРАКТИКИ -->
@@ -86,6 +137,44 @@
     <div class="modal-tag" id="modalTag"></div>
     <h2 id="modalTitle"></h2>
     <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ЧИТАЛКА КНИГ -->
+<div class="reader" id="reader">
+  <div class="reader-top">
+    <button class="reader-back" id="readerBack">← Назад</button>
+    <div class="reader-controls">
+      <button class="reader-font" id="fontDown">A−</button>
+      <button class="reader-font" id="fontUp">A+</button>
+    </div>
+  </div>
+  <div class="reader-progress"><div class="reader-progress-bar" id="progressBar"></div></div>
+  <div class="reader-scroll" id="readerScroll">
+    <div class="reader-title" id="readerTitle"></div>
+    <div class="reader-content" id="readerContent">Загрузка...</div>
+  </div>
+  <div class="reader-bottom">
+    <button class="btn-ghost" id="openNotesBtn">📝 Заметки <span id="notesCount">0</span></button>
+    <button class="btn-primary" id="markReadBtn">✓ Прочитано</button>
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ЗАМЕТОК -->
+<div class="notes-modal" id="notesModal">
+  <div class="notes-sheet">
+    <div class="notes-sheet-top">
+      <div class="notes-sheet-title">📝 Заметки к книге</div>
+      <button class="notes-sheet-close" id="notesClose">✕</button>
+    </div>
+
+    <div class="notes-sheet-book" id="notesBookName"></div>
+
+    <textarea class="notes-input" id="noteInput" placeholder="Что запомнилось? Что применишь в жизни?"></textarea>
+
+    <button class="btn-primary" id="saveNoteBtn">Сохранить заметку</button>
+
+    <div class="notes-saved-list" id="notesSavedList"></div>
   </div>
 </div>
 
