@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Путь к себе</title>
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=5">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -44,6 +44,10 @@
       <div class="stat-value" id="booksVal">0</div>
       <div class="stat-label">книг</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-value" id="habitsVal">0/0</div>
+      <div class="stat-label">привычек</div>
+    </div>
   </section>
 
   <!-- НАВИГАЦИЯ -->
@@ -52,6 +56,7 @@
     <button class="tab" data-tab="library">📖 Библиотека</button>
     <button class="tab" data-tab="quotes">💬 Цитаты</button>
     <button class="tab" data-tab="favorites">❤️ Избранное</button>
+    <button class="tab" data-tab="habits">✅ Привычки</button>
     <button class="tab" data-tab="practice">🎯 Практики</button>
     <button class="tab" data-tab="diary">💭 Дневник</button>
   </nav>
@@ -67,7 +72,7 @@
       <button class="filter-chip active" data-cat="all">Все</button>
       <button class="filter-chip" data-cat="psychology">🧠 Психология</button>
       <button class="filter-chip" data-cat="money">💰 Деньги</button>
-      <button class="filter-chip" data-cat="discipline">⚡️ Дисциплина</button>
+      <button class="filter-chip" data-cat="discipline">⚡ Дисциплина</button>
       <button class="filter-chip" data-cat="meaning">🌌 Смысл</button>
       <button class="filter-chip" data-cat="body">💪 Тело</button>
     </div>
@@ -81,7 +86,7 @@
       <button class="filter-chip" data-cat="psychology">🧠 Психология</button>
       <button class="filter-chip" data-cat="money">💰 Деньги</button>
       <button class="filter-chip" data-cat="love">❤️ Отношения</button>
-      <button class="filter-chip" data-cat="discipline">⚡️ Дисциплина</button>
+      <button class="filter-chip" data-cat="discipline">⚡ Дисциплина</button>
       <button class="filter-chip" data-cat="meaning">🌌 Смысл</button>
       <button class="filter-chip" data-cat="body">💪 Тело</button>
       <button class="filter-chip" data-cat="creative">🎨 Творчество</button>
@@ -104,6 +109,22 @@
       <div class="fav-count" id="favCount">Сохранено: 0</div>
     </div>
     <div class="cards" id="favoritesList"></div>
+  </section>
+
+  <!-- ПРИВЫЧКИ -->
+  <section class="tab-content" id="habits">
+
+    <div class="habit-add-box">
+      <div class="habit-add-title">Новая привычка</div>
+      <div class="habit-add-row">
+        <input class="habit-input-emoji" id="habitEmoji" type="text" maxlength="2" value="⭐" placeholder="😀">
+        <input class="habit-input-name" id="habitName" type="text" maxlength="30" placeholder="Например: Зарядка 10 минут">
+      </div>
+      <button class="btn-primary" id="addHabitBtn">+ Добавить привычку</button>
+    </div>
+
+    <div class="habits-list" id="habitsList"></div>
+
   </section>
 
   <!-- ПРАКТИКИ -->
@@ -141,7 +162,7 @@
 </div>
 
 <!-- ЧИТАЛКА КНИГ -->
-<div class="reader" id="reader">
+<div class="reader" id="reader" style="display:none;">
   <div class="reader-top">
     <button class="reader-back" id="readerBack">← Назад</button>
     <div class="reader-controls">
@@ -161,7 +182,7 @@
 </div>
 
 <!-- МОДАЛЬНОЕ ОКНО ЗАМЕТОК -->
-<div class="notes-modal" id="notesModal">
+<div class="notes-modal" id="notesModal" style="display:none;">
   <div class="notes-sheet">
     <div class="notes-sheet-top">
       <div class="notes-sheet-title">📝 Заметки к книге</div>
@@ -178,6 +199,6 @@
   </div>
 </div>
 
-<script src="app.js?v=3"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
