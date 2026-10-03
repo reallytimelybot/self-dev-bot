@@ -1,91 +1,126 @@
+/* ============ ИНИЦИАЛИЗАЦИЯ TELEGRAM ============ */
+
 const tg = window.Telegram?.WebApp;
 tg?.ready();
 tg?.expand();
 tg?.setHeaderColor?.('#0A0A0A');
 tg?.setBackgroundColor?.('#0A0A0A');
 
-if (tg?.initDataUnsafe?.user) {
-  const u = tg.initDataUnsafe.user;
-  document.getElementById('userBadge').textContent = u.first_name || 'Гость';
+const BOT_USERNAME = 'reallytimelybot_bot'; // ← поменяй на username своего бота
+
+/* ============ ТЕМА ============ */
+
+let currentTheme = localStorage.getItem('theme') || 'dark';
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = currentTheme === 'dark' ? '🌙 Тёмная' : '☀️ Светлая';
+}
+applyTheme();
+
+/* ============ HAPTIC ============ */
+
+function haptic(kind) {
+  if (localStorage.getItem('haptics') === 'off') return;
+  try {
+    if (kind === 'light') tg?.HapticFeedback?.impactOccurred('light');
+    else if (kind === 'medium') tg?.HapticFeedback?.impactOccurred('medium');
+    else if (kind === 'success') tg?.HapticFeedback?.notificationOccurred('success');
+    else if (kind === 'warning') tg?.HapticFeedback?.notificationOccurred('warning');
+    else if (kind === 'select') tg?.HapticFeedback?.selectionChanged();
+  } catch (e) {}
+}
+
+/* ============ ПОЛЬЗОВАТЕЛЬ ============ */
+
+const user = tg?.initDataUnsafe?.user;
+const userName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : 'Гость';
+const userLetter = (user?.first_name || '?')[0].toUpperCase();
+const userPhoto = user?.photo_url || '';
+
+// Сохраняем дату первого открытия
+let firstOpenDate = localStorage.getItem('firstOpen');
+if (!firstOpenDate) {
+  firstOpenDate = new Date().toISOString().slice(0, 10);
+  localStorage.setItem('firstOpen', firstOpenDate);
+}
+
+// Заполняем аватарку в шапке
+const headerAvatarImg = document.getElementById('headerAvatarImg');
+const headerAvatarLetter = document.getElementById('headerAvatarLetter');
+if (userPhoto) {
+  headerAvatarImg.src = userPhoto;
+  headerAvatarLetter.style.display = 'none';
+} else {
+  headerAvatarLetter.textContent = userLetter;
+}
+
+// Заполняем профиль
+document.getElementById('profileName').textContent = userName;
+const daysInApp = Math.max(1, Math.round((Date.now() - new Date(firstOpenDate).getTime()) / 86400000) + 1);
+const firstOpenHuman = new Date(firstOpenDate).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' });
+document.getElementById('profileSub').textContent = `В пути с ${firstOpenHuman} · ${daysInApp} ${plural(daysInApp, 'день', 'дня', 'дней')}`;
+
+const profileAvatarImg = document.getElementById('profileAvatarImg');
+const profileAvatarLetter = document.getElementById('profileAvatarLetter');
+if (userPhoto) {
+  profileAvatarImg.src = userPhoto;
+  profileAvatarLetter.style.display = 'none';
+} else {
+  profileAvatarLetter.textContent = userLetter;
 }
 
 /* ============ ДАННЫЕ ============ */
 
 const knowledge = [
-  {
-    tag: "К. Юнг", title: "Тень и целостность",
-    desc: "Почему важно принять свои тёмные стороны",
+  { tag: "К. Юнг", title: "Тень и целостность", desc: "Почему важно принять свои тёмные стороны",
     body: `<p><strong>Карл Густав Юнг</strong> утверждал: всё, что мы отвергаем в себе, не исчезает — оно становится нашей «Тенью» и управляет нами из бессознательного.</p>
     <p>Мы злимся на других за то, что не позволяем себе. Мы критикуем в людях то, что подавили внутри.</p>
     <p><em>Практика:</em> вспомни человека, который тебя раздражает. Спроси себя: «Какое качество во мне он отражает?» Это первый шаг к интеграции Тени.</p>
-    <p>Целостность — не в том, чтобы быть идеальным. А в том, чтобы вместить всего себя.</p>`
-  },
-  {
-    tag: "В. Франкл", title: "Смысл важнее счастья",
-    desc: "Логотерапия и сила выбора",
+    <p>Целостность — не в том, чтобы быть идеальным. А в том, чтобы вместить всего себя.</p>` },
+  { tag: "В. Франкл", title: "Смысл важнее счастья", desc: "Логотерапия и сила выбора",
     body: `<p><strong>Виктор Франкл</strong>, переживший концлагерь, писал: «У человека можно отнять всё, кроме одного — возможности выбирать своё отношение к обстоятельствам».</p>
     <p>Счастье нельзя поймать напрямую — оно приходит как побочный эффект жизни со смыслом.</p>
     <p><em>Вопрос себе:</em> «Зачем я встаю утром? Кому и чему я служу?»</p>
-    <p>Если есть «зачем» — выдержишь любое «как».</p>`
-  },
-  {
-    tag: "М. Селигман", title: "Выученный оптимизм",
-    desc: "Как перестать объяснять плохое через себя",
+    <p>Если есть «зачем» — выдержишь любое «как».</p>` },
+  { tag: "М. Селигман", title: "Выученный оптимизм", desc: "Как перестать объяснять плохое через себя",
     body: `<p><strong>Мартин Селигман</strong> доказал: пессимизм — это привычка объяснять неудачи как постоянные, всеобъемлющие и личные.</p>
     <p>«Я всегда всё порчу» → это и есть выученная беспомощность.</p>
     <p><em>Техника:</em> когда что-то идёт не так, спроси — это <strong>временно</strong>? это <strong>касается только этой сферы</strong>? это <strong>не только моя вина</strong>?</p>
-    <p>Оптимизм — не розовые очки. Это более точная картина реальности.</p>`
-  },
-  {
-    tag: "А. Лоуэн", title: "Тело помнит всё",
-    desc: "Как эмоции живут в мышцах",
+    <p>Оптимизм — не розовые очки. Это более точная картина реальности.</p>` },
+  { tag: "А. Лоуэн", title: "Тело помнит всё", desc: "Как эмоции живут в мышцах",
     body: `<p><strong>Александр Лоуэн</strong> показал: подавленные эмоции не исчезают — они «застревают» в теле как хроническое напряжение.</p>
     <p>Сжатые плечи — тревога. Зажатая челюсть — гнев. Слабый вдох — страх проявиться.</p>
     <p><em>Практика:</em> 3 минуты глубокого дыхания животом. Заметь, где тело держит напряжение. Не убирай — просто наблюдай.</p>
-    <p>Осознание — уже начало расслабления.</p>`
-  },
-  {
-    tag: "Э. Фромм", title: "Иметь или быть",
-    desc: "Два способа жить",
+    <p>Осознание — уже начало расслабления.</p>` },
+  { tag: "Э. Фромм", title: "Иметь или быть", desc: "Два способа жить",
     body: `<p><strong>Эрих Фромм</strong> разделял два модуса существования: «иметь» и «быть».</p>
     <p>В режиме «иметь» — я ценен тем, что у меня есть. В режиме «быть» — тем, что я есть и как я живу.</p>
-    <p><em>Вопрос:</em> если убрать всё, что ты имеешь — что останется? Это и есть ты настоящий.</p>`
-  }
+    <p><em>Вопрос:</em> если убрать всё, что ты имеешь — что останется? Это и есть ты настоящий.</p>` }
 ];
 
 const practice = [
-  {
-    tag: "Утро", title: "Практика 5-4-3-2-1", desc: "Вернуть себя в настоящий момент",
-    body: `<p>Тревога живёт в будущем. Тело — всегда здесь.</p>
-    <p><strong>Назови:</strong></p>
+  { tag: "Утро", title: "Практика 5-4-3-2-1", desc: "Вернуть себя в настоящий момент",
+    body: `<p>Тревога живёт в будущем. Тело — всегда здесь.</p><p><strong>Назови:</strong></p>
     <p>— 5 вещей, которые видишь<br>— 4 — которые слышишь<br>— 3 — которых касаешься<br>— 2 — запаха<br>— 1 — вкус</p>
-    <p><em>Зачем:</em> техника заземления из терапии ПТСР. Работает за 60 секунд.</p>`
-  },
-  {
-    tag: "Днём", title: "Вопрос к себе", desc: "Три вопроса в середине дня",
+    <p><em>Зачем:</em> техника заземления из терапии ПТСР. Работает за 60 секунд.</p>` },
+  { tag: "Днём", title: "Вопрос к себе", desc: "Три вопроса в середине дня",
     body: `<p>Остановись на 2 минуты и ответь честно:</p>
     <p>1. Что я сейчас чувствую <strong>на самом деле</strong>?<br>2. Чего мне сейчас не хватает?<br>3. Что я могу себе дать прямо сейчас?</p>
-    <p><em>Зачем:</em> возвращает контакт с потребностями — без него мы живём в автопилоте.</p>`
-  },
-  {
-    tag: "Вечер", title: "Дневник благодарности", desc: "Перепрограммирование внимания",
+    <p><em>Зачем:</em> возвращает контакт с потребностями — без него мы живём в автопилоте.</p>` },
+  { tag: "Вечер", title: "Дневник благодарности", desc: "Перепрограммирование внимания",
     body: `<p>Мозг эволюционно настроен искать угрозы. Благодарность — способ его переобучить.</p>
     <p>Каждый вечер записывай <strong>3 вещи</strong>, за которые ты благодарен сегодня. Даже мелочи: чашка кофе, тёплый свитер, разговор с другом.</p>
-    <p><em>Через 21 день</em> мозг начнёт сканировать мир по-другому.</p>`
-  },
-  {
-    tag: "Перед сном", title: "Тело-сканирование", desc: "Медитация на расслабление",
+    <p><em>Через 21 день</em> мозг начнёт сканировать мир по-другому.</p>` },
+  { tag: "Перед сном", title: "Тело-сканирование", desc: "Медитация на расслабление",
     body: `<p>Ляг. Закрой глаза. Дыши ровно.</p>
     <p>Перенеси внимание в стопы. Почувствуй их. Затем — голени, колени, бёдра. Медленно поднимайся к тазу, животу, груди, плечам, шее, лицу.</p>
     <p>Где замечаешь напряжение — просто дыши туда. Не убирай. Осознавай.</p>
-    <p><em>10 минут перед сном</em> — и сон глубже.</p>`
-  },
-  {
-    tag: "Кризис", title: "Стоп-техника", desc: "Когда накрывает эмоция",
+    <p><em>10 минут перед сном</em> — и сон глубже.</p>` },
+  { tag: "Кризис", title: "Стоп-техника", desc: "Когда накрывает эмоция",
     body: `<p><strong>S.T.O.P.</strong></p>
     <p><strong>S</strong> — Stop. Замри.<br><strong>T</strong> — Take a breath. Вдох.<br><strong>O</strong> — Observe. Что я чувствую? Где в теле?<br><strong>P</strong> — Proceed. Действуй осознанно.</p>
-    <p><em>Это разрыв</em> между стимулом и реакцией. Там живёт свобода.</p>`
-  }
+    <p><em>Это разрыв</em> между стимулом и реакцией. Там живёт свобода.</p>` }
 ];
 
 const books = [
@@ -128,14 +163,29 @@ function escapeHtml(s) {
 }
 
 function plural(n, one, few, many) {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
+  const mod10 = n % 10, mod100 = n % 100;
   if (mod10 === 1 && mod100 !== 11) return one;
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
   return many;
 }
 
-/* ============ РЕНДЕР ЗНАНИЙ И ПРАКТИК ============ */
+function todayKey(date = new Date()) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/* ============ ХРАНИЛИЩА ДАННЫХ ============ */
+
+let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+let readBooks = JSON.parse(localStorage.getItem('readBooks') || '[]');
+let bookNotes = JSON.parse(localStorage.getItem('bookNotes') || '{}');
+let habits = JSON.parse(localStorage.getItem('habits') || '[]');
+
+/* ============ ЗНАНИЯ И ПРАКТИКИ ============ */
 
 function renderCards(data, containerId, type) {
   const box = document.getElementById(containerId);
@@ -147,7 +197,6 @@ function renderCards(data, containerId, type) {
     </div>
   `).join('');
 }
-
 renderCards(knowledge, 'knowledgeList', 'k');
 renderCards(practice, 'practiceList', 'p');
 
@@ -159,7 +208,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById(tab.dataset.tab).classList.add('active');
-    tg?.HapticFeedback?.impactOccurred('light');
+    haptic('light');
   });
 });
 
@@ -181,7 +230,7 @@ document.addEventListener('click', (e) => {
   modalTitle.textContent = item.title;
   modalBody.innerHTML = item.body;
   modal.classList.add('open');
-  tg?.HapticFeedback?.impactOccurred('medium');
+  haptic('medium');
 });
 
 document.getElementById('modalClose').addEventListener('click', () => modal.classList.remove('open'));
@@ -190,21 +239,20 @@ modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList
 /* ============ ДНЕВНИК ============ */
 
 let selectedMood = null;
-let notes = JSON.parse(localStorage.getItem('notes') || '[]');
 
 document.querySelectorAll('.mood').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.mood').forEach(m => m.classList.remove('active'));
     btn.classList.add('active');
     selectedMood = btn.dataset.mood;
-    tg?.HapticFeedback?.selectionChanged();
+    haptic('select');
   });
 });
 
 document.getElementById('saveNote').addEventListener('click', () => {
   const text = document.getElementById('diaryText').value.trim();
   if (!text) return;
-  if (!selectedMood) { tg?.HapticFeedback?.notificationOccurred('warning'); return; }
+  if (!selectedMood) { haptic('warning'); return; }
   notes.unshift({
     mood: selectedMood, text,
     date: new Date().toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -215,7 +263,7 @@ document.getElementById('saveNote').addEventListener('click', () => {
   selectedMood = null;
   renderNotes();
   updateStats();
-  tg?.HapticFeedback?.notificationOccurred('success');
+  haptic('success');
 });
 
 function renderNotes() {
@@ -236,7 +284,6 @@ function renderNotes() {
 
 let currentQuote = null;
 let currentQuoteCat = 'all';
-let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 
 function pickRandomQuote() {
   const pool = currentQuoteCat === 'all' ? quotes : quotes.filter(q => q.cat === currentQuoteCat);
@@ -264,7 +311,7 @@ function renderQuote(q) {
 
 document.getElementById('btnNextQuote').addEventListener('click', () => {
   renderQuote(pickRandomQuote());
-  tg?.HapticFeedback?.impactOccurred('light');
+  haptic('light');
 });
 
 document.getElementById('btnSaveQuote').addEventListener('click', () => {
@@ -275,7 +322,8 @@ document.getElementById('btnSaveQuote').addEventListener('click', () => {
   localStorage.setItem('favorites', JSON.stringify(favorites));
   renderQuote(currentQuote);
   renderFavorites();
-  tg?.HapticFeedback?.notificationOccurred('success');
+  updateStats();
+  haptic('success');
 });
 
 document.querySelectorAll('#quotes .filter-chip').forEach(chip => {
@@ -284,7 +332,7 @@ document.querySelectorAll('#quotes .filter-chip').forEach(chip => {
     chip.classList.add('active');
     currentQuoteCat = chip.dataset.cat;
     renderQuote(pickRandomQuote());
-    tg?.HapticFeedback?.selectionChanged();
+    haptic('select');
   });
 });
 
@@ -308,7 +356,8 @@ function renderFavorites() {
       localStorage.setItem('favorites', JSON.stringify(favorites));
       renderFavorites();
       renderQuote(currentQuote);
-      tg?.HapticFeedback?.impactOccurred('light');
+      updateStats();
+      haptic('light');
     });
   });
 }
@@ -316,7 +365,6 @@ function renderFavorites() {
 /* ============ БИБЛИОТЕКА ============ */
 
 let currentLibCat = 'all';
-let readBooks = JSON.parse(localStorage.getItem('readBooks') || '[]');
 
 function renderLibrary() {
   const list = document.getElementById('libraryList');
@@ -353,7 +401,7 @@ document.querySelectorAll('.lib-filters .filter-chip').forEach(chip => {
     chip.classList.add('active');
     currentLibCat = chip.dataset.cat;
     renderLibrary();
-    tg?.HapticFeedback?.selectionChanged();
+    haptic('select');
   });
 });
 
@@ -371,18 +419,20 @@ let currentFontSize = parseInt(localStorage.getItem('readerFontSize') || '16');
 
 function applyFontSize() {
   readerContent.style.fontSize = currentFontSize + 'px';
+  const v = document.getElementById('profileFontVal');
+  if (v) v.textContent = currentFontSize;
   localStorage.setItem('readerFontSize', currentFontSize);
 }
 
 document.getElementById('fontUp').addEventListener('click', () => {
   currentFontSize = Math.min(24, currentFontSize + 1);
   applyFontSize();
-  tg?.HapticFeedback?.impactOccurred('light');
+  haptic('light');
 });
 document.getElementById('fontDown').addEventListener('click', () => {
   currentFontSize = Math.max(13, currentFontSize - 1);
   applyFontSize();
-  tg?.HapticFeedback?.impactOccurred('light');
+  haptic('light');
 });
 
 document.addEventListener('click', async (e) => {
@@ -412,7 +462,6 @@ async function openBook(slug) {
     if (!res.ok) throw new Error('Не найдено');
     const text = await res.text();
     readerContent.innerHTML = formatBookText(text);
-
     const savedPos = localStorage.getItem('readPos_' + slug);
     if (savedPos) readerScroll.scrollTop = parseInt(savedPos);
     else readerScroll.scrollTop = 0;
@@ -420,51 +469,31 @@ async function openBook(slug) {
     readerContent.innerHTML = `
       <p style="color:var(--red);">📭 Файл книги пока не загружен.</p>
       <p style="color:var(--text-dim);font-size:14px;">
-        Скачай текст с <strong>Project Gutenberg</strong> или <strong>Викитеки</strong> и загрузи в папку <code>books/</code> на GitHub.<br><br>
-        Имя файла: <code>${slug}.txt</code>
+        Загрузи <code>${slug}.txt</code> в папку <code>books/</code> на GitHub.
       </p>`;
   }
 }
 
-/* ============ ФОРМАТИРОВАНИЕ ТЕКСТА КНИГИ ============ */
-
 function formatBookText(rawText) {
-  let text = rawText
-    .replace(/\r\n/g, '\n')
-    .replace(/\[\d+\]/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-
+  let text = rawText.replace(/\r\n/g, '\n').replace(/\[\d+\]/g, '').replace(/\n{3,}/g, '\n\n').trim();
   const lines = text.split('\n').map(l => l.trim());
   const out = [];
-  let paragraphBuffer = [];
-
-  function flushParagraph() {
-    if (!paragraphBuffer.length) return;
-    const joined = paragraphBuffer.join(' ').trim();
-    if (joined.length > 0) {
-      const chunks = splitLongParagraph(joined, 500);
-      chunks.forEach(chunk => out.push(`<p>${escapeHtml(chunk)}</p>`));
+  let buf = [];
+  function flush() {
+    if (!buf.length) return;
+    const j = buf.join(' ').trim();
+    if (j.length > 0) {
+      splitLongParagraph(j, 500).forEach(ch => out.push(`<p>${escapeHtml(ch)}</p>`));
     }
-    paragraphBuffer = [];
+    buf = [];
   }
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line) { flushParagraph(); continue; }
-    if (isHeader(line)) {
-      flushParagraph();
-      out.push(`<h3 class="book-header">${escapeHtml(line)}</h3>`);
-      continue;
-    }
-    if (isSubHeader(line)) {
-      flushParagraph();
-      out.push(`<h4 class="book-subheader">${escapeHtml(line)}</h4>`);
-      continue;
-    }
-    paragraphBuffer.push(line);
+  for (const line of lines) {
+    if (!line) { flush(); continue; }
+    if (isHeader(line)) { flush(); out.push(`<h3 class="book-header">${escapeHtml(line)}</h3>`); continue; }
+    if (isSubHeader(line)) { flush(); out.push(`<h4 class="book-subheader">${escapeHtml(line)}</h4>`); continue; }
+    buf.push(line);
   }
-  flushParagraph();
+  flush();
   return out.join('');
 }
 
@@ -472,9 +501,8 @@ function isHeader(line) {
   if (line.length > 60) return false;
   const letters = line.replace(/[^A-ZА-ЯЁ]/g, '');
   if (letters.length < 3) return false;
-  const upper = line.toUpperCase();
   const ratio = letters.length / line.length;
-  if (line === upper && ratio > 0.5) return true;
+  if (line === line.toUpperCase() && ratio > 0.5) return true;
   if (/^(КНИГА|ГЛАВА|ЧАСТЬ|РАЗДЕЛ|BOOK|CHAPTER|PART)\b/i.test(line)) return true;
   return false;
 }
@@ -530,21 +558,20 @@ markReadBtn.addEventListener('click', () => {
   localStorage.setItem('readBooks', JSON.stringify(readBooks));
   renderLibrary();
   updateStats();
-  tg?.HapticFeedback?.notificationOccurred('success');
+  haptic('success');
 });
 
 /* ============ ЗАМЕТКИ К КНИГАМ ============ */
 
-let bookNotes = JSON.parse(localStorage.getItem('bookNotes') || '{}');
+function getBookNotes(slug) { return bookNotes[slug] || []; }
 
-function getBookNotes(slug) {
-  return bookNotes[slug] || [];
+function totalBookNotes() {
+  return Object.values(bookNotes).reduce((s, arr) => s + arr.length, 0);
 }
 
 function updateNotesCount() {
   if (!currentBook) return;
-  const count = getBookNotes(currentBook.slug).length;
-  document.getElementById('notesCount').textContent = count;
+  document.getElementById('notesCount').textContent = getBookNotes(currentBook.slug).length;
 }
 
 const notesModal = document.getElementById('notesModal');
@@ -554,13 +581,13 @@ const notesBookName = document.getElementById('notesBookName');
 
 function renderNotesInModal() {
   if (!currentBook) return;
-  const bookNoteList = getBookNotes(currentBook.slug);
+  const list = getBookNotes(currentBook.slug);
   notesBookName.textContent = currentBook.title;
-  if (!bookNoteList.length) {
+  if (!list.length) {
     notesSavedList.innerHTML = '<div class="notes-empty">Пока нет заметок. Оставь первую 👇</div>';
     return;
   }
-  notesSavedList.innerHTML = bookNoteList.map((n, i) => `
+  notesSavedList.innerHTML = list.map((n, i) => `
     <div class="note-item">
       <button class="note-delete" data-idx="${i}">✕</button>
       <div class="note-text">${escapeHtml(n.text)}</div>
@@ -570,14 +597,14 @@ function renderNotesInModal() {
   notesSavedList.querySelectorAll('.note-delete').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = +btn.dataset.idx;
-      const slug = currentBook.slug;
-      bookNotes[slug].splice(idx, 1);
-      if (!bookNotes[slug].length) delete bookNotes[slug];
+      bookNotes[currentBook.slug].splice(idx, 1);
+      if (!bookNotes[currentBook.slug].length) delete bookNotes[currentBook.slug];
       localStorage.setItem('bookNotes', JSON.stringify(bookNotes));
       renderNotesInModal();
       updateNotesCount();
       renderLibrary();
-      tg?.HapticFeedback?.impactOccurred('light');
+      updateStats();
+      haptic('light');
     });
   });
 }
@@ -586,7 +613,7 @@ document.getElementById('openNotesBtn').addEventListener('click', () => {
   noteInput.value = '';
   renderNotesInModal();
   notesModal.classList.add('open');
-  tg?.HapticFeedback?.impactOccurred('light');
+  haptic('light');
 });
 
 document.getElementById('notesClose').addEventListener('click', () => notesModal.classList.remove('open'));
@@ -607,50 +634,32 @@ document.getElementById('saveNoteBtn').addEventListener('click', () => {
   renderNotesInModal();
   updateNotesCount();
   renderLibrary();
-  tg?.HapticFeedback?.notificationOccurred('success');
+  updateStats();
+  haptic('success');
 });
 
-/* ============ ТРЕКЕР ПРИВЫЧЕК ============ */
-
-let habits = JSON.parse(localStorage.getItem('habits') || '[]');
+/* ============ ПРИВЫЧКИ ============ */
 
 const DAY_NAMES = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
-function todayKey(date = new Date()) {
-  const d = new Date(date);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
 function calcStreak(checks) {
   let streak = 0;
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  while (checks[todayKey(d)]) {
-    streak++;
-    d.setDate(d.getDate() - 1);
-  }
+  const d = new Date(); d.setHours(0,0,0,0);
+  while (checks[todayKey(d)]) { streak++; d.setDate(d.getDate() - 1); }
   return streak;
+}
+
+function totalHabitChecks() {
+  return habits.reduce((sum, h) => sum + Object.keys(h.checks || {}).length, 0);
 }
 
 function renderHabits() {
   const list = document.getElementById('habitsList');
-
   if (!habits.length) {
-    list.innerHTML = `
-      <div class="habits-empty">
-        ✅ Пока нет привычек<br>
-        Добавь первую выше —<br>
-        и начни отмечать каждый день
-      </div>`;
+    list.innerHTML = `<div class="habits-empty">✅ Пока нет привычек<br>Добавь первую выше —<br>и начни отмечать каждый день</div>`;
     return;
   }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
+  const today = new Date(); today.setHours(0,0,0,0);
   list.innerHTML = habits.map((h, i) => {
     const days = [];
     for (let d = 6; d >= 0; d--) {
@@ -658,17 +667,13 @@ function renderHabits() {
       day.setDate(day.getDate() - d);
       const key = todayKey(day);
       days.push({
-        key,
-        label: DAY_NAMES[day.getDay()],
-        num: day.getDate(),
+        key, label: DAY_NAMES[day.getDay()], num: day.getDate(),
         done: !!(h.checks && h.checks[key]),
         isToday: d === 0
       });
     }
-
     const todayDone = !!(h.checks && h.checks[todayKey()]);
     const streak = calcStreak(h.checks || {});
-
     return `
       <div class="habit-card">
         <button class="habit-remove" data-idx="${i}">✕</button>
@@ -690,8 +695,7 @@ function renderHabits() {
         <button class="habit-mark-btn ${todayDone ? 'done' : ''}" data-idx="${i}">
           ${todayDone ? '✓ Сегодня сделано' : 'Отметить сегодня'}
         </button>
-      </div>
-    `;
+      </div>`;
   }).join('');
 
   list.querySelectorAll('.habit-mark-btn').forEach(btn => {
@@ -704,10 +708,9 @@ function renderHabits() {
       localStorage.setItem('habits', JSON.stringify(habits));
       renderHabits();
       updateStats();
-      tg?.HapticFeedback?.notificationOccurred('success');
+      haptic('success');
     });
   });
-
   list.querySelectorAll('.habit-remove').forEach(btn => {
     btn.addEventListener('click', () => {
       const i = +btn.dataset.idx;
@@ -716,7 +719,7 @@ function renderHabits() {
       localStorage.setItem('habits', JSON.stringify(habits));
       renderHabits();
       updateStats();
-      tg?.HapticFeedback?.impactOccurred('medium');
+      haptic('medium');
     });
   });
 }
@@ -724,48 +727,200 @@ function renderHabits() {
 document.getElementById('addHabitBtn').addEventListener('click', () => {
   const name = document.getElementById('habitName').value.trim();
   const emoji = document.getElementById('habitEmoji').value.trim() || '⭐';
-
-  if (!name) {
-    tg?.HapticFeedback?.notificationOccurred('warning');
-    return;
-  }
-
-  habits.push({
-    emoji,
-    name,
-    checks: {},
-    createdAt: Date.now()
-  });
+  if (!name) { haptic('warning'); return; }
+  habits.push({ emoji, name, checks: {}, createdAt: Date.now() });
   localStorage.setItem('habits', JSON.stringify(habits));
-
   document.getElementById('habitName').value = '';
   document.getElementById('habitEmoji').value = '⭐';
-
   renderHabits();
   updateStats();
-  tg?.HapticFeedback?.notificationOccurred('success');
+  haptic('success');
 });
 
-/* ============ СТАТИСТИКА ============ */
+/* ============ СТАТИСТИКА (компактная строка на главной) ============ */
 
-function updateStats() {
-  document.getElementById('notesVal').textContent = notes.length;
-  document.getElementById('doneVal').textContent = Math.min(notes.length * 2 + 3, 99);
-
-  const booksVal = document.getElementById('booksVal');
-  if (booksVal) booksVal.textContent = readBooks.length;
-
-  const todayK = todayKey();
-  const habitsToday = habits.filter(h => h.checks && h.checks[todayK]).length;
-  const habitsStat = document.getElementById('habitsVal');
-  if (habitsStat) habitsStat.textContent = habitsToday + '/' + habits.length;
-
+function getDiaryStreak() {
   const days = new Set(notes.map(n => new Date(n.date.split(',')[0]).toDateString()));
   let streak = 0;
   let d = new Date();
   while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); }
-  document.getElementById('streakVal').textContent = streak || 1;
+  return streak;
 }
+
+function renderStatsBar() {
+  const bar = document.getElementById('statsBar');
+  const streak = getDiaryStreak() || 1;
+  const habitsToday = habits.filter(h => h.checks && h.checks[todayKey()]).length;
+  const habitsTotal = habits.length;
+
+  const items = [];
+
+  // Дней подряд — всегда показываем (мин 1)
+  items.push({ icon: '🔥', val: streak, label: plural(streak, 'день', 'дня', 'дней'), always: true });
+
+  // Привычки
+  if (habitsTotal > 0) {
+    items.push({ icon: '✅', val: `${habitsToday}/${habitsTotal}`, label: 'привычек', always: false });
+  }
+
+  // Записи
+  if (notes.length > 0) {
+    items.push({ icon: '💭', val: notes.length, label: plural(notes.length, 'запись', 'записи', 'записей'), always: false });
+  }
+
+  // Избранное
+  if (favorites.length > 0) {
+    items.push({ icon: '💬', val: favorites.length, label: 'цитат', always: false });
+  }
+
+  // Книги
+  if (readBooks.length > 0) {
+    items.push({ icon: '📖', val: readBooks.length, label: plural(readBooks.length, 'книга', 'книги', 'книг'), always: false });
+  }
+
+  bar.innerHTML = items.map((it, i) => {
+    const sep = i > 0 ? '<span class="stats-bar-sep">·</span>' : '';
+    const zeroClass = (typeof it.val === 'number' && it.val === 0) ? 'zero' : '';
+    return `${sep}<div class="stats-bar-item">
+      <span class="stat-bar-icon">${it.icon}</span>
+      <span class="stat-bar-val ${zeroClass}">${it.val}</span>
+      <span class="stat-bar-label">${it.label}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ============ ДОСТИЖЕНИЯ ============ */
+
+const achievements = [
+  { id: 'first_open', emoji: '🌱', name: 'Первый шаг', desc: 'Открыл приложение', check: () => true },
+  { id: 'streak_3', emoji: '🔥', name: 'Разогрев', desc: '3 дня подряд', check: () => getDiaryStreak() >= 3 },
+  { id: 'streak_7', emoji: '⚡', name: 'Неделя силы', desc: '7 дней подряд', check: () => getDiaryStreak() >= 7 },
+  { id: 'streak_30', emoji: '🏔️', name: 'Месяц дисциплины', desc: '30 дней подряд', check: () => getDiaryStreak() >= 30 },
+  { id: 'first_book', emoji: '📖', name: 'Первый читатель', desc: 'Прочитал 1 книгу', check: () => readBooks.length >= 1 },
+  { id: 'books_5', emoji: '📚', name: 'Библиофил', desc: 'Прочитал 5 книг', check: () => readBooks.length >= 5 },
+  { id: 'quotes_10', emoji: '💬', name: 'Коллекционер', desc: '10 цитат в избранном', check: () => favorites.length >= 10 },
+  { id: 'notes_10', emoji: '💭', name: 'Дневниковед', desc: '10 записей в дневнике', check: () => notes.length >= 10 },
+  { id: 'habits_30', emoji: '✅', name: 'Дисциплинированный', desc: '30 отметок привычек', check: () => totalHabitChecks() >= 30 },
+  { id: 'book_notes_5', emoji: '📝', name: 'Мыслитель', desc: '5 заметок к книгам', check: () => totalBookNotes() >= 5 }
+];
+
+function renderAchievements() {
+  const grid = document.getElementById('achievementsGrid');
+  let unlockedCount = 0;
+  grid.innerHTML = achievements.map(a => {
+    const unlocked = a.check();
+    if (unlocked) unlockedCount++;
+    return `
+      <div class="ach-card ${unlocked ? 'unlocked' : ''}">
+        ${!unlocked ? '<span class="ach-lock">🔒</span>' : ''}
+        <span class="ach-emoji">${a.emoji}</span>
+        <div class="ach-name">${a.name}</div>
+        <div class="ach-desc">${a.desc}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('achCount').textContent = `${unlockedCount}/${achievements.length}`;
+}
+
+/* ============ СТАТИСТИКА В ПРОФИЛЕ ============ */
+
+function renderProfileStats() {
+  const box = document.getElementById('profileStats');
+  const habitsToday = habits.filter(h => h.checks && h.checks[todayKey()]).length;
+  const stats = [
+    { icon: '🔥', name: 'Дней подряд', val: getDiaryStreak() || 1 },
+    { icon: '✅', name: 'Привычек сегодня', val: `${habitsToday}/${habits.length}` },
+    { icon: '📖', name: 'Прочитано книг', val: readBooks.length },
+    { icon: '💬', name: 'Цитат в избранном', val: favorites.length },
+    { icon: '💭', name: 'Записей в дневнике', val: notes.length },
+    { icon: '📝', name: 'Заметок к книгам', val: totalBookNotes() }
+  ];
+  box.innerHTML = stats.map(s => {
+    const isZero = (typeof s.val === 'number' && s.val === 0);
+    return `
+      <div class="profile-stat-row">
+        <span class="profile-stat-icon">${s.icon}</span>
+        <span class="profile-stat-name">${s.name}</span>
+        <span class="profile-stat-val ${isZero ? 'zero' : ''}">${s.val}</span>
+      </div>`;
+  }).join('');
+}
+
+/* ============ ОБНОВЛЕНИЕ СТАТИСТИКИ ============ */
+
+function updateStats() {
+  renderStatsBar();
+  renderProfileStats();
+  renderAchievements();
+}
+
+/* ============ ПРОФИЛЬ ============ */
+
+const profile = document.getElementById('profile');
+
+document.getElementById('headerAvatar').addEventListener('click', () => {
+  renderProfileStats();
+  renderAchievements();
+  profile.classList.add('open');
+  haptic('light');
+});
+
+document.getElementById('profileBack').addEventListener('click', () => {
+  profile.classList.remove('open');
+});
+
+// Размер шрифта в настройках профиля
+document.getElementById('profileFontUp').addEventListener('click', () => {
+  currentFontSize = Math.min(24, currentFontSize + 1);
+  applyFontSize();
+  haptic('light');
+});
+document.getElementById('profileFontDown').addEventListener('click', () => {
+  currentFontSize = Math.max(13, currentFontSize - 1);
+  applyFontSize();
+  haptic('light');
+});
+
+// Переключатель темы
+document.getElementById('themeToggle').addEventListener('click', () => {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', currentTheme);
+  applyTheme();
+  // Обновляем цвет шапки в Telegram
+  tg?.setHeaderColor?.(currentTheme === 'dark' ? '#0A0A0A' : '#F7F4EF');
+  haptic('success');
+});
+
+// Переключатель вибрации
+const hapticBtn = document.getElementById('hapticToggle');
+function renderHapticToggle() {
+  const isOff = localStorage.getItem('haptics') === 'off';
+  hapticBtn.textContent = isOff ? 'Выкл' : 'Вкл';
+  hapticBtn.classList.toggle('on', !isOff);
+}
+renderHapticToggle();
+hapticBtn.addEventListener('click', () => {
+  const isOff = localStorage.getItem('haptics') === 'off';
+  localStorage.setItem('haptics', isOff ? 'on' : 'off');
+  renderHapticToggle();
+  haptic('success');
+});
+
+// Открыть напоминания (переход в бот)
+document.getElementById('openRemindersBtn').addEventListener('click', () => {
+  const url = `https://t.me/${BOT_USERNAME}?start=reminders`;
+  if (tg?.openTelegramLink) tg.openTelegramLink(url);
+  else window.open(url, '_blank');
+  haptic('light');
+});
+
+// Поделиться
+document.getElementById('shareBtn').addEventListener('click', () => {
+  const url = `https://t.me/${BOT_USERNAME}`;
+  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent('Попробуй «Путь к себе» — мини-приложение для саморазвития')}`;
+  if (tg?.openTelegramLink) tg.openTelegramLink(shareUrl);
+  else window.open(shareUrl, '_blank');
+  haptic('light');
+});
 
 /* ============ ИНИЦИАЛИЗАЦИЯ ============ */
 
@@ -774,4 +929,5 @@ renderFavorites();
 renderQuote(pickRandomQuote());
 renderLibrary();
 renderHabits();
+applyFontSize();
 updateStats();
