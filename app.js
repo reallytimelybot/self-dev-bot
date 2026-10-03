@@ -6,7 +6,7 @@ tg?.expand();
 tg?.setHeaderColor?.('#0A0A0A');
 tg?.setBackgroundColor?.('#0A0A0A');
 
-const BOT_USERNAME = 'reallytimelybotbot'; // ← поменяй на username своего бота
+const BOT_USERNAME = 'reallytimelybot'; // ← поменяй на username своего бота
 
 /* ============ ТЕМА ============ */
 
