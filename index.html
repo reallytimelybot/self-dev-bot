@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Путь к себе</title>
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -15,7 +15,10 @@
     <span class="logo-mark">◈</span>
     <span class="logo-text">Путь к себе</span>
   </div>
-  <div class="user-badge" id="userBadge">Гость</div>
+  <button class="header-avatar" id="headerAvatar" aria-label="Профиль">
+    <img id="headerAvatarImg" alt="avatar">
+    <span class="header-avatar-letter" id="headerAvatarLetter">?</span>
+  </button>
 </header>
 
 <!-- ГЛАВНЫЙ ЭКРАН -->
@@ -26,29 +29,8 @@
     <p class="hero-sub">Психология, практики и инсайты — в одном приложении</p>
   </section>
 
-  <!-- СТАТИСТИКА -->
-  <section class="stats">
-    <div class="stat-card">
-      <div class="stat-value" id="streakVal">0</div>
-      <div class="stat-label">дней</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="doneVal">0</div>
-      <div class="stat-label">практик</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="notesVal">0</div>
-      <div class="stat-label">записей</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="booksVal">0</div>
-      <div class="stat-label">книг</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="habitsVal">0/0</div>
-      <div class="stat-label">привычек</div>
-    </div>
-  </section>
+  <!-- КОМПАКТНАЯ СТАТИСТИКА -->
+  <div class="stats-bar" id="statsBar"></div>
 
   <!-- НАВИГАЦИЯ -->
   <nav class="tabs">
@@ -199,6 +181,93 @@
   </div>
 </div>
 
-<script src="app.js?v=5"></script>
+<!-- ЭКРАН ПРОФИЛЯ -->
+<div class="profile" id="profile" style="display:none;">
+  <div class="profile-top">
+    <button class="profile-back" id="profileBack">← Назад</button>
+    <div class="profile-title">Профиль</div>
+  </div>
+
+  <div class="profile-scroll">
+
+    <!-- ШАПКА -->
+    <div class="profile-hero">
+      <div class="profile-avatar">
+        <img id="profileAvatarImg" alt="avatar">
+        <span class="profile-avatar-letter" id="profileAvatarLetter">?</span>
+      </div>
+      <div class="profile-name" id="profileName">Гость</div>
+      <div class="profile-sub" id="profileSub">В пути с —</div>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div class="profile-section">
+      <div class="profile-section-title">📊 Статистика</div>
+      <div class="profile-stats" id="profileStats"></div>
+    </div>
+
+    <!-- ДОСТИЖЕНИЯ -->
+    <div class="profile-section">
+      <div class="profile-section-title">🏆 Достижения <span class="ach-count" id="achCount"></span></div>
+      <div class="achievements-grid" id="achievementsGrid"></div>
+    </div>
+
+    <!-- НАСТРОЙКИ -->
+    <div class="profile-section">
+      <div class="profile-section-title">⚙️ Настройки</div>
+      <div class="settings-list">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Размер шрифта в книгах</div>
+            <div class="setting-hint">Какой текст читать удобнее</div>
+          </div>
+          <div class="setting-font-ctrl">
+            <button class="setting-btn" id="profileFontDown">A−</button>
+            <span class="setting-font-val" id="profileFontVal">16</span>
+            <button class="setting-btn" id="profileFontUp">A+</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Тема</div>
+            <div class="setting-hint">Тёмная или светлая</div>
+          </div>
+          <button class="setting-pill" id="themeToggle">🌙 Тёмная</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Вибрация</div>
+            <div class="setting-hint">Отклик при нажатиях</div>
+          </div>
+          <button class="setting-pill" id="hapticToggle">Вкл</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- НАПОМИНАНИЯ -->
+    <div class="profile-section">
+      <div class="profile-section-title">🔔 Напоминания</div>
+      <div class="reminder-hint">
+        Настрой время утренней цитаты, вечернего дневника и привычек — бот будет присылать их в чат.
+      </div>
+      <button class="btn-primary" id="openRemindersBtn">Открыть меню напоминаний</button>
+    </div>
+
+    <!-- О ПРИЛОЖЕНИИ -->
+    <div class="profile-section">
+      <div class="profile-section-title">ℹ️ О приложении</div>
+      <div class="about-box">
+        <div class="about-name">Путь к себе · v1.1</div>
+        <div class="about-desc">Мини-приложение для саморазвития: знания, книги, цитаты, привычки и дневник — в одном месте.</div>
+        <button class="btn-ghost" id="shareBtn">📤 Поделиться с другом</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js?v=6"></script>
 </body>
 </html>
